@@ -1,0 +1,120 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model conversation {
+  id        Int       @id @default(autoincrement())
+  user_Id1  Int?
+  user_Id2  Int?
+  create_At DateTime? @db.Date
+  user_id   Int
+  user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Conversation_User1")
+  message   message[]
+
+  @@index([user_id], map: "fk_Conversation_User1_idx")
+}
+
+model facility {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(45)
+  room room[]
+}
+
+model image {
+  id        Int     @id @default(autoincrement())
+  name      String? @db.VarChar(255)
+  url       String? @db.VarChar(255)
+  public_id String? @db.VarChar(255)
+  item_id   Int
+  item      item    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Image_Item1")
+
+  @@index([item_id], map: "fk_Image_Item1_idx")
+}
+
+model item {
+  id      Int         @id @default(autoincrement())
+  name    String?     @db.VarChar(45)
+  des     String?     @db.VarChar(255)
+  post_id Int
+  type_id Int
+  status  item_Status
+  image   image[]
+  post    post        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Post1")
+  type    type        @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Type1")
+
+  @@index([post_id], map: "fk_Item_Post1_idx")
+  @@index([type_id], map: "fk_Item_Type1_idx")
+}
+
+model message {
+  id              Int          @id @default(autoincrement())
+  content         String?      @db.VarChar(255)
+  create_At       DateTime?    @db.Date
+  sender_id       Int
+  conversation_id Int
+  conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_Conversation1")
+  user            user         @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_User1")
+
+  @@index([conversation_id], map: "fk_Message_Conversation1_idx")
+  @@index([sender_id], map: "fk_Message_User1_idx")
+}
+
+model post {
+  id        Int       @id @default(autoincrement())
+  content   String?   @db.VarChar(255)
+  create_At DateTime? @db.Date
+  latitude  Decimal?  @db.Decimal(10, 8)
+  longitude Decimal?  @db.Decimal(11, 8)
+  user_id   Int
+  item      item[]
+  user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Post_User")
+
+  @@index([user_id], map: "fk_Post_User_idx")
+}
+
+model room {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(45)
+  latitude    Decimal? @db.Decimal(10, 8)
+  longittude  Decimal? @db.Decimal(11, 8)
+  facility_id Int
+  facility    facility @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Room_facility1")
+
+  @@index([facility_id], map: "fk_Room_facility1_idx")
+}
+
+model type {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(45)
+  item item[]
+}
+
+model user {
+  id           Int            @id @default(autoincrement())
+  name         String?        @db.VarChar(45)
+  phone        String?        @db.VarChar(45)
+  email        String         @db.VarChar(45) @unique
+  password     String         @db.VarChar(255)
+  create_At    DateTime?      @db.Date
+  conversation conversation[]
+  message      message[]
+  post         post[]
+  roleId       Int
+  role         role           @relation(fields: [roleId], references: [id])
+}
+
+model role {
+  id   Int     @id @default(autoincrement())
+  role String? @db.VarChar(45) @unique
+  users user[] 
+}
+
+enum item_Status {
+  Lost
+  Found
+}
