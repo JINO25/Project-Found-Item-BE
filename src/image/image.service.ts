@@ -100,12 +100,30 @@ export class ImageService {
     return results;
   }
 
+  async updateQdrant(itemId: number): Promise<void> {
+    await this.ensureCollectionExists();
+
+    await this.qdrant.setPayload('images',{      
+      filter: {
+        must: [
+          {
+            key: 'itemId',
+            match: { value: itemId },
+          },
+        ],
+      },
+      payload:{
+         status: 'found',
+      },
+    })
+  }
+
   async searchAllImages(itemId: number, topK = 5) {
     const images = await this.prisma.image.findMany({
       where: { item_id: itemId },
-      include:{
-        item:true
-      }
+      include: {
+        item: true,
+      },
     });
 
     if (!images.length)
@@ -113,7 +131,12 @@ export class ImageService {
 
     const allResults: {
       imageId: number;
-      similar: { id: number | string; postId: number; score: number; url?: string | null }[];
+      similar: {
+        id: number | string;
+        postId: number;
+        score: number;
+        url?: string | null;
+      }[];
     }[] = [];
 
     // const allResults: {
@@ -137,7 +160,7 @@ export class ImageService {
       });
 
       //Get id from list result
-      listId = result.filter(r=>r.score > 0.5).map((r) => Number(r.id));
+      listId = result.filter((r) => r.score > 0.5).map((r) => Number(r.id));
 
       const listImages = await this.prisma.image.findMany({
         where: {
@@ -145,22 +168,22 @@ export class ImageService {
             in: listId,
           },
         },
-        include:{
-            item:true
-        }
+        include: {
+          item: true,
+        },
       });
 
       const filterImagesSimilarity = result
-      .filter(r=>listId.includes(Number(r.id)))
-      .map((r) => {
-        const query = listImages.find((img) => Number(r.id) === img.id);
-        return {
-          id: r.id,
-          postId: query?.item.post_id,
-          score: r.score,
-          url: query?.url,
-        };
-      });
+        .filter((r) => listId.includes(Number(r.id)))
+        .map((r) => {
+          const query = listImages.find((img) => Number(r.id) === img.id);
+          return {
+            id: r.id,
+            postId: query?.item.post_id,
+            score: r.score,
+            url: query?.url,
+          };
+        });
 
       allResults.push({
         imageId: image.id,

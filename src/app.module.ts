@@ -11,6 +11,7 @@ import jwtConfig from './config/jwt.config';
 import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ImageModule } from './image/image.module';
+import { FacilityRoomModule } from './facility-room/facility-room.module';
 
 
 @Module({
@@ -29,7 +30,8 @@ import { ImageModule } from './image/image.module';
     PrismaModule,
     AuthModule,
     CloudinaryModule,
-    ImageModule
+    ImageModule,
+    FacilityRoomModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService,    

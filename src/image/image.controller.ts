@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, HttpCode, HttpStatus, Param, ParseIntPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Controller, Get,  Param, ParseIntPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ImageService } from './image.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 
@@ -9,7 +9,6 @@ export class ImageController {
 
   @Post('upload/:itemId')
   @UseInterceptors(FilesInterceptor('files'))
-  @HttpCode(HttpStatus.CREATED)
   async uploadImages(
     @Param('itemId', ParseIntPipe) itemId:number,
     @UploadedFiles() files: Express.Multer.File[]
@@ -22,8 +21,14 @@ export class ImageController {
     };
   }
 
+  @Post(':itemId/found')
+async markItemFound(@Param('itemId') itemId: number) {
+  await this.imageService.updateQdrant(itemId);
+  return { message: `All Qdrant points for item ${itemId} marked as found` };
+}
+
+
   @Get('similar/:id')
-  @HttpCode(HttpStatus.OK)
   async findSimilar(@Param('id', ParseIntPipe) id: number) {
     const data = await this.imageService.searchAllImages(id);
     return {data}

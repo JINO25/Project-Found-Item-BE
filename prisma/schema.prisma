@@ -9,9 +9,9 @@ datasource db {
 
 model conversation {
   id        Int       @id @default(autoincrement())
+  create_At DateTime? @db.Date
   user_Id1  Int?
   user_Id2  Int?
-  create_At DateTime? @db.Date
   user_id   Int
   user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Conversation_User1")
   message   message[]
@@ -27,10 +27,10 @@ model facility {
 
 model image {
   id        Int     @id @default(autoincrement())
+  item_id   Int
   name      String? @db.VarChar(255)
   url       String? @db.VarChar(255)
   public_id String? @db.VarChar(255)
-  item_id   Int
   item      item    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Image_Item1")
 
   @@index([item_id], map: "fk_Image_Item1_idx")
@@ -38,11 +38,11 @@ model image {
 
 model item {
   id      Int         @id @default(autoincrement())
-  name    String?     @db.VarChar(45)
   des     String?     @db.VarChar(255)
+  name    String?     @db.VarChar(45)
   post_id Int
-  type_id Int
   status  item_Status
+  type_id Int
   image   image[]
   post    post        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Post1")
   type    type        @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Type1")
@@ -54,9 +54,9 @@ model item {
 model message {
   id              Int          @id @default(autoincrement())
   content         String?      @db.VarChar(255)
+  conversation_id Int
   create_At       DateTime?    @db.Date
   sender_id       Int
-  conversation_id Int
   conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_Conversation1")
   user            user         @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_User1")
 
@@ -79,10 +79,10 @@ model post {
 
 model room {
   id          Int      @id @default(autoincrement())
-  name        String   @db.VarChar(45)
-  latitude    Decimal? @db.Decimal(10, 8)
-  longittude  Decimal? @db.Decimal(11, 8)
   facility_id Int
+  latitude    Decimal? @db.Decimal(10, 8)
+  longitude   Decimal? @db.Decimal(11, 8)
+  name        String   @db.VarChar(45)
   facility    facility @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Room_facility1")
 
   @@index([facility_id], map: "fk_Room_facility1_idx")
@@ -96,22 +96,24 @@ model type {
 
 model user {
   id           Int            @id @default(autoincrement())
-  name         String?        @db.VarChar(45)
-  phone        String?        @db.VarChar(45)
-  email        String         @db.VarChar(45) @unique
-  password     String         @db.VarChar(255)
+  roleId       Int
   create_At    DateTime?      @db.Date
+  email        String         @unique @db.VarChar(45)
+  name         String?        @db.VarChar(45)
+  password     String         @db.VarChar(255)
+  phone        String?        @db.VarChar(45)
   conversation conversation[]
   message      message[]
   post         post[]
-  roleId       Int
   role         role           @relation(fields: [roleId], references: [id])
+
+  @@index([roleId], map: "user_roleId_fkey")
 }
 
 model role {
-  id   Int     @id @default(autoincrement())
-  role String? @db.VarChar(45) @unique
-  users user[] 
+  id    Int     @id @default(autoincrement())
+  role  String? @unique @db.VarChar(45)
+  users user[]
 }
 
 enum item_Status {

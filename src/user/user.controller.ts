@@ -9,47 +9,38 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  @HttpCode(HttpStatus.OK)
-  async getAllUsers(){
-    const data = await this.userService.findAllUsers()
-    return data;
+  async getAllUsers() {
+    const data = await this.userService.findAllUsers();
+    return { message: 'Get all users successfully', data };
   }
 
   @Post()
-  @HttpCode(HttpStatus.CREATED)
-  async createUserForAdmin(@Body() createUserDto: CreateUserDto) {
+  async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
-    return {
-      message: 'User created successfully',
-      data: user,
-    };
+    return { message: 'User created successfully', data: user };
   }
-  
+
+  @Post('admin')
+  async createUserForAdmin(@Body() createUserDto: CreateUserDto) {
+    const user = await this.userService.createAdmin(createUserDto);
+    return { message: 'Admin created successfully', data: user };
+  }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const user = await this.userService.findOne(Number(id));
-    return {
-      message: 'Get user successfully',
-      data: user,
-    };
+    return { message: 'Get user successfully', data: user };
   }
 
- 
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     const updated = await this.userService.update(Number(id), updateUserDto);
-    return {
-      message: 'User updated successfully',
-      data: updated,
-    };
+    return { message: 'User updated successfully', data: updated };
   }
 
   @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@Param('id') id: string) {
     await this.userService.deleteUser(Number(id));
-    return {
-      message: `User with id ${id} deleted successfully`,
-    };
   }
 }
