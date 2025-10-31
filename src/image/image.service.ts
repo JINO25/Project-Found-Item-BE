@@ -55,55 +55,53 @@ export class ImageService {
     return Array.from(result.data);
   }
 
-  async uploadImage(itemId: number, files: Express.Multer.File[]) {
-    const item = await this.prisma.item.findUnique({
-      where: {
-        id: itemId,
-      },
-    });
+  async uploadImages(itemId: number, files: Express.Multer.File[]) {
+    const item = await this.prisma.item.findUnique({ where: { id: itemId } });
+    if (!item) throw new NotFoundException(`Item ${itemId} not found`);
 
-    if (!item) throw new NotFoundException(`Not found item with id: ${itemId}`);
+    const uploadResults = await Promise.all(
+      files.map((file) => this.cloudinaryService.uploadFile(file)),
+    );
 
-    const uploadPromises = files.map(async (file) => {
-      const upload = await this.cloudinaryService.uploadFile(file);
+    const vectors = await Promise.all(
+      uploadResults.map((u) => this.encodeImageFromUrl(u.secure_url)),
+    );
 
-      const image = await this.prisma.image.create({
-        data: {
-          item_id: itemId,
-          name: file.originalname,
-          url: upload.secure_url,
-          public_id: upload.public_id,
-        },
-      });
+    await this.ensureCollectionExists();
 
-      const vector = await this.encodeImageFromUrl(upload.secure_url);
-      await this.ensureCollectionExists();
-      await this.qdrant.upsert('images', {
-        points: [
-          {
-            id: image.id,
-            vector,
-            payload: {
-              itemId,
-              typeId: item.type_id,
-              url: upload.secure_url,
-              status: 'unfound',
-            },
+    const createdImages = await Promise.all(
+      uploadResults.map((upload, i) =>
+        this.prisma.image.create({
+          data: {
+            item_id: itemId,
+            name: files[i].originalname,
+            url: upload.secure_url,
+            public_id: upload.public_id,
           },
-        ],
-      });
-      return image;
+        }),
+      ),
+    );
+
+    await this.qdrant.upsert('images', {
+      points: createdImages.map((img, i) => ({
+        id: img.id,
+        vector: vectors[i],
+        payload: {
+          itemId,
+          typeId: item.type_id,
+          url: img.url,
+          status: 'unfound',
+        },
+      })),
     });
 
-    const results = await Promise.all(uploadPromises);
-
-    return results;
-  }
+    return createdImages;
+  }  
 
   async updateQdrant(itemId: number): Promise<void> {
     await this.ensureCollectionExists();
 
-    await this.qdrant.setPayload('images',{      
+    await this.qdrant.setPayload('images', {
       filter: {
         must: [
           {
@@ -112,10 +110,10 @@ export class ImageService {
           },
         ],
       },
-      payload:{
-         status: 'found',
+      payload: {
+        status: 'found',
       },
-    })
+    });
   }
 
   async searchAllImages(itemId: number, topK = 5) {
@@ -146,7 +144,7 @@ export class ImageService {
     let result, listId;
 
     for (const image of images) {
-      const vector = await this.encodeImageFromUrl(image.url!);
+      const vector = await this.encodeImageFromUrl(image.url);
       result = await this.qdrant.search('images', {
         vector,
         limit: topK,
@@ -158,6 +156,7 @@ export class ImageService {
           must_not: [{ key: 'itemId', match: { value: itemId } }],
         },
       });
+      console.log(result);
 
       //Get id from list result
       listId = result.filter((r) => r.score > 0.5).map((r) => Number(r.id));

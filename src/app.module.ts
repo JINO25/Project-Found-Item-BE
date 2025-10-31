@@ -12,6 +12,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ImageModule } from './image/image.module';
 import { FacilityRoomModule } from './facility-room/facility-room.module';
+import { PostModule } from './post/post.module';
 
 
 @Module({
@@ -31,7 +32,8 @@ import { FacilityRoomModule } from './facility-room/facility-room.module';
     AuthModule,
     CloudinaryModule,
     ImageModule,
-    FacilityRoomModule
+    FacilityRoomModule,
+    PostModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService,    

@@ -23,14 +23,15 @@ model facility {
   id   Int     @id @default(autoincrement())
   name String? @db.VarChar(45)
   room room[]
+  post post[]
 }
 
 model image {
   id        Int     @id @default(autoincrement())
   item_id   Int
-  name      String? @db.VarChar(255)
-  url       String? @db.VarChar(255)
-  public_id String? @db.VarChar(255)
+  name      String @db.VarChar(255)
+  url       String @db.VarChar(255)
+  public_id String @db.VarChar(255)
   item      item    @relation(fields: [item_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Image_Item1")
 
   @@index([item_id], map: "fk_Image_Item1_idx")
@@ -38,8 +39,8 @@ model image {
 
 model item {
   id      Int         @id @default(autoincrement())
-  des     String?     @db.VarChar(255)
-  name    String?     @db.VarChar(45)
+  des     String     @db.VarChar(255)
+  name    String     @db.VarChar(45)
   post_id Int
   status  item_Status
   type_id Int
@@ -65,16 +66,21 @@ model message {
 }
 
 model post {
-  id        Int       @id @default(autoincrement())
-  content   String?   @db.VarChar(255)
-  create_At DateTime? @db.Date
-  latitude  Decimal?  @db.Decimal(10, 8)
-  longitude Decimal?  @db.Decimal(11, 8)
-  user_id   Int
-  item      item[]
-  user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Post_User")
+  id          Int       @id @default(autoincrement())
+  title       String   @db.VarChar(100)
+  content     String   @db.Text
+  create_At   DateTime @db.Date
+  user_id     Int
+  facility_id Int?
+  room_id     Int?
+  item        item[]
+  user        user      @relation(fields: [user_id], references: [id])
+  facility    facility? @relation(fields: [facility_id], references: [id], onDelete: SetNull)
+  room        room?     @relation(fields: [room_id], references: [id], onDelete: SetNull)
 
-  @@index([user_id], map: "fk_Post_User_idx")
+  @@index([user_id])
+  @@index([facility_id])
+  @@index([room_id])
 }
 
 model room {
@@ -84,6 +90,7 @@ model room {
   longitude   Decimal? @db.Decimal(11, 8)
   name        String   @db.VarChar(45)
   facility    facility @relation(fields: [facility_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Room_facility1")
+  post        post[]
 
   @@index([facility_id], map: "fk_Room_facility1_idx")
 }
