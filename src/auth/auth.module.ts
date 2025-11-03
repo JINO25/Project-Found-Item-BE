@@ -11,11 +11,14 @@ import { BcryptProvider } from './providers/bcrypt.provider';
 import { UserModule } from 'src/user/user.module';
 import { GenerateTokensProvider } from './providers/generate-tokens.provider';
 import { SignInProvider } from './providers/sign-in.provider';
+import { MailModule } from 'src/mail/mail.module';
+import { RefreshTokensProvider } from './providers/refresh-tokens.provider';
 
 
 @Module({
   imports: [PassportModule,
-    forwardRef(()=>UserModule)
+    forwardRef(()=>UserModule),
+    MailModule
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtAuthGuard, JwtStrategy, RolesGuard,
@@ -24,7 +27,8 @@ import { SignInProvider } from './providers/sign-in.provider';
       useClass:BcryptProvider
     },
     GenerateTokensProvider,
-    SignInProvider
+    RefreshTokensProvider,
+    SignInProvider,
   ],
   exports: [JwtAuthGuard, RolesGuard, HashingProvider],
 })

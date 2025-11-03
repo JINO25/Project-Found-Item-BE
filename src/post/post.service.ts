@@ -2,13 +2,19 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { ImageService } from 'src/image/image.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreatePostDto } from './dto/req/create-post.dto';
 
 import { PostResDto } from './dto/res/post-response.dto';
-import { room } from '@prisma/client';
+import { image, room } from '@prisma/client';
+import { ItemStatus } from './enums/item-status.enum';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class PostService {
@@ -31,9 +37,7 @@ export class PostService {
       });
 
       if (!facility) {
-        throw new BadRequestException(
-          'Facility không tồn tại hoặc không hợp lệ',
-        );
+        throw new NotFoundException('Facility không tồn tại hoặc không hợp lệ');
       }
 
       let room: room | null = null;
@@ -45,7 +49,7 @@ export class PostService {
 
         // chỉ throw khi có room_id nhưng không tồn tại
         if (!room) {
-          throw new BadRequestException('Room không tồn tại');
+          throw new NotFoundException('Room không tồn tại');
         }
 
         // nếu có room_id và facility_id → kiểm tra ràng buộc
@@ -73,7 +77,7 @@ export class PostService {
       });
 
       if (!type) {
-        throw new BadRequestException(
+        throw new NotFoundException(
           `Type with id:${createPostDto.item.type_id} not found!`,
         );
       }
@@ -100,14 +104,17 @@ export class PostService {
     });
 
     //image
-    const images = await this.imageService.uploadImages(result.item.id, files);   
+    let images: image[] = [];
+    if (files.length > 0) {
+      images = await this.imageService.uploadImages(result.item.id, files);
+    }
 
     const dto: PostResDto = {
       id: result.post.id,
       title: result.post.title,
       content: result.post.content,
       user_id: result.post.user_id,
-      createdAt: result.post.create_At,
+      create_At: result.post.create_At,
       item: {
         id: result.item.id,
         name: result.item.name,
@@ -122,5 +129,131 @@ export class PostService {
     };
 
     return dto;
+  }
+
+  async updateStatusPost(postId: number, userId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+    });
+    if (!post || post.user_id !== userId) {
+      throw new NotFoundException(`Not found post with id: ${postId}!`);
+    }
+
+    if (!post)
+      throw new NotFoundException(`Not found post with id: ${postId}!`);
+
+    const item = await this.prisma.item.findFirst({
+      where: {
+        post_id: post.id,
+      },
+    });
+
+    if (!item)
+      throw new NotFoundException(
+        `Not found item of post with id post: ${postId}!`,
+      );
+
+    const updatedItem = await this.prisma.item.update({
+      where: { id: item.id },
+      data: { status: ItemStatus.Found },
+    });
+
+    return updatedItem;
+  }
+
+  async deletePost(postId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: { id: postId },
+      include: {
+        item: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Post with id ${postId} not found`);
+    }
+
+    const items = post.item;
+
+    if (items && items.length > 0) {
+      for (const item of items) {
+        const images = item.images;
+
+        if (images.length > 0) {
+          await Promise.all(
+            images.map((img) =>
+              this.imageService.deleteImageOnCloudinary(img.public_id),
+            ),
+          );
+
+          await this.imageService.deleteQdrant(item.id);
+
+          await this.prisma.image.deleteMany({
+            where: { item_id: item.id },
+          });
+        }
+
+        await this.prisma.item.delete({
+          where: { id: item.id },
+        });
+      }
+    }
+
+    await this.prisma.post.delete({
+      where: { id: postId },
+    });
+
+    return { message: `Post ${postId} deleted successfully` };
+  }
+
+  async getAllPost(type: number) {
+    const posts = await this.prisma.post.findMany({
+      where: {
+        item: {
+          some: {
+            status: ItemStatus.Lost,
+            type_id: type ? type : {},
+          },
+        },
+      },
+      include: {
+        item: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
+
+    return plainToInstance(PostResDto, posts, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getPostById(postId: number) {
+    const post = await this.prisma.post.findUnique({
+      where: {
+        id: postId,
+      },
+      include: {
+        item: {
+          include: {
+            images: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Not found post with id: ${postId}!`);
+    }
+
+    return plainToInstance(PostResDto, post, {
+      excludeExtraneousValues: true,
+    });
   }
 }

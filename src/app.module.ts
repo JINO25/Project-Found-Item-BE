@@ -13,6 +13,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ImageModule } from './image/image.module';
 import { FacilityRoomModule } from './facility-room/facility-room.module';
 import { PostModule } from './post/post.module';
+import { MailModule } from './mail/mail.module';
 
 
 @Module({
@@ -33,7 +34,8 @@ import { PostModule } from './post/post.module';
     CloudinaryModule,
     ImageModule,
     FacilityRoomModule,
-    PostModule
+    PostModule,
+    MailModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService,    

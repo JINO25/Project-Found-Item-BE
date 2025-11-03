@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import {
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -39,5 +40,11 @@ export class ImageController {
   async findSimilar(@Param('id', ParseIntPipe) id: number) {
     const data = await this.imageService.searchAllImages(id);
     return { data };
+  }
+
+  @Delete(':itemId')
+  async deleteImages(@Param('itemId') itemId: number) {
+    await this.imageService.deleteQdrant(itemId);
+    return { message: `All Qdrant points for item ${itemId} deleted!` };
   }
 }

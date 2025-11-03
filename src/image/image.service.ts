@@ -116,6 +116,25 @@ export class ImageService {
     });
   }
 
+  async deleteQdrant(itemId: number): Promise<void> {
+    await this.ensureCollectionExists();
+
+    await this.qdrant.delete('images', {
+      filter: {
+        must: [
+          {
+            key: 'itemId',
+            match: { value: itemId },
+          },
+        ],
+      }
+    });
+  }
+
+  async deleteImageOnCloudinary(publicId:string){
+    await this.cloudinaryService.deleteFile(publicId);
+  }
+
   async searchAllImages(itemId: number, topK = 5) {
     const images = await this.prisma.image.findMany({
       where: { item_id: itemId },

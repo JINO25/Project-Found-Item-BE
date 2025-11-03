@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
 /* eslint-disable @typescript-eslint/no-unsafe-return */
@@ -22,5 +23,18 @@ export class CloudinaryService {
             resolve(result);
         }).end(file.buffer);        
     })
+  }
+
+  async deleteFile(publicId: string): Promise<void> {
+    try {
+      const result = await this.cloudinary.uploader.destroy(publicId);
+
+      if (result.result !== 'ok' && result.result !== 'not found') {
+        throw new Error(`Cloudinary deletion failed: ${JSON.stringify(result)}`);
+      }
+    } catch (error) {
+      console.error(`Failed to delete Cloudinary image ${publicId}:`, error);
+      throw new Error(`Cannot delete image from Cloudinary: ${error.message}`);
+    }
   }
 }

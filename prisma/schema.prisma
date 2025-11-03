@@ -44,7 +44,7 @@ model item {
   post_id Int
   status  item_Status
   type_id Int
-  image   image[]
+  images   image[]
   post    post        @relation(fields: [post_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Post1")
   type    type        @relation(fields: [type_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Item_Type1")
 
@@ -69,7 +69,7 @@ model post {
   id          Int       @id @default(autoincrement())
   title       String   @db.VarChar(100)
   content     String   @db.Text
-  create_At   DateTime @db.Date
+  create_At   DateTime @default(now())
   user_id     Int
   facility_id Int?
   room_id     Int?
@@ -115,6 +115,13 @@ model user {
   role         role           @relation(fields: [roleId], references: [id])
 
   @@index([roleId], map: "user_roleId_fkey")
+}
+
+model password_reset {
+  id      Int      @id @default(autoincrement())
+  email   String   @db.VarChar(255)
+  expires DateTime
+  token   String   @db.VarChar(255)
 }
 
 model role {
