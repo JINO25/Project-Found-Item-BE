@@ -14,6 +14,7 @@ import { ImageModule } from './image/image.module';
 import { FacilityRoomModule } from './facility-room/facility-room.module';
 import { PostModule } from './post/post.module';
 import { MailModule } from './mail/mail.module';
+import googleConfig from './config/google.config';
 
 
 @Module({
@@ -21,7 +22,7 @@ import { MailModule } from './mail/mail.module';
     ConfigModule.forRoot({
       isGlobal:true,
       envFilePath:'.env',
-      load:[jwtConfig]
+      load:[jwtConfig, googleConfig]
     }),
     JwtModule.registerAsync({
       global:true,

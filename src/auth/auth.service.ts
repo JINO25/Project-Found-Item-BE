@@ -21,6 +21,7 @@ import { password_reset } from '@prisma/client';
 import { MailService } from 'src/mail/mail.service';
 import { PasswordResetDTO } from './dto/password-reset.dto';
 import { HashingProvider } from './providers/hashing.provider';
+import { GenerateTokensProvider } from './providers/generate-tokens.provider';
 
 @Injectable()
 export class AuthService {
@@ -29,6 +30,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly signIn: SignInProvider,
     private readonly refreshTokensProvider: RefreshTokensProvider,
+    private readonly generateTokensProvider: GenerateTokensProvider,
     private readonly prisma: PrismaService,
     private readonly mailService: MailService,
     private readonly hashingProvider: HashingProvider,
@@ -38,8 +40,28 @@ export class AuthService {
     return await this.userService.create(createUserDto);
   }
 
+  public async validateGoogleAuthen(createUserDto: CreateUserDto) {
+    const user = await this.userService.findOneByEmail(createUserDto.email);
+    if (!user) {
+      return await this.userService.create(createUserDto);
+    } else {
+      return user;
+    }
+  }
+
   public async login(signInDto: SignInDto) {
     return await this.signIn.signIn(signInDto);
+  }
+
+  public async loginWithGoogle(googleUser: any) {
+    const user = await this.userService.findOneByEmail(googleUser.email);
+    if (!user)
+      throw new NotFoundException(
+        `User not found with email: ${googleUser.email}`,
+      );
+    const { accessToken, refreshToken } =
+      await this.generateTokensProvider.generateTokens(user);
+    return { accessToken, refreshToken };
   }
 
   public async refreshTokens(refreshTokenDto: RefreshTokenDto) {
@@ -80,6 +102,11 @@ export class AuthService {
 
   public async forgotPassword(email: string) {
     const user = await this.userService.findOneByEmail(email);
+
+    if (!user)
+      throw new NotFoundException(
+        `User not found with email: ${email}`,
+      );
 
     const token = randomBytes(32).toString('hex');
 

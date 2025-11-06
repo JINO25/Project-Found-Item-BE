@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 import { Match } from 'src/common/decorators/match.decorator';
 
 
@@ -8,12 +8,15 @@ export class CreateUserDto {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   phone: string;
 
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  avatar:string;
 
   @IsNotEmpty()
   @MinLength(6)

@@ -55,6 +55,11 @@ export class ImageService {
     return Array.from(result.data);
   }
 
+  async uploadAvatar(file: Express.Multer.File) {  
+    const data = await this.cloudinaryService.uploadFile(file);
+    return data.url;
+  }  
+
   async uploadImages(itemId: number, files: Express.Multer.File[]) {
     const item = await this.prisma.item.findUnique({ where: { id: itemId } });
     if (!item) throw new NotFoundException(`Item ${itemId} not found`);

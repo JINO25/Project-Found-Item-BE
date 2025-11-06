@@ -5,6 +5,7 @@
 import {
     Inject,
     Injectable,
+    NotFoundException,
     RequestTimeoutException,
     UnauthorizedException,
     forwardRef,
@@ -34,8 +35,10 @@ export class SignInProvider {
     ) { }
 
     public async signIn(signInDto: SignInDto) {    
-        let user = await this.usersService.findOneByEmail(signInDto.email);      
+        let user = await this.usersService.findOneByEmail(signInDto.email); 
 
+      if(!user) throw new NotFoundException(`User not found with email: ${signInDto.email}`);
+        
         let isEqual: boolean = false;
 
         try {            

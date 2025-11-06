@@ -10,6 +10,8 @@ export class UserDTORes {
   @Expose()
   email: string;
   @Expose()
+  avatar:string;
+  @Expose()
   date: Date;
   @Expose()
   role: string;

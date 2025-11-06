@@ -1,8 +1,9 @@
 /* eslint-disable prettier/prettier */
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/req/create-user.dto';
 import { UpdateUserDTO } from './dto/req/update-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('users')
 export class UserController {
@@ -33,8 +34,9 @@ export class UserController {
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
-    const updated = await this.userService.update(Number(id), updateUserDto);
+  @UseInterceptors(FileInterceptor('file'))
+  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO, file: Express.Multer.File) {
+    const updated = await this.userService.update(Number(id), updateUserDto,file);
     return { message: 'User updated successfully', data: updated };
   }
 

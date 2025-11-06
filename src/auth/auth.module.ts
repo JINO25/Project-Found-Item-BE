@@ -13,15 +13,16 @@ import { GenerateTokensProvider } from './providers/generate-tokens.provider';
 import { SignInProvider } from './providers/sign-in.provider';
 import { MailModule } from 'src/mail/mail.module';
 import { RefreshTokensProvider } from './providers/refresh-tokens.provider';
-
+import { GoogleStrategy } from './strategies/google.strategy';
 
 @Module({
-  imports: [PassportModule,
+  imports: [
+    PassportModule,
     forwardRef(()=>UserModule),
     MailModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtAuthGuard, JwtStrategy, RolesGuard,
+  providers: [AuthService, JwtAuthGuard, JwtStrategy, RolesGuard, GoogleStrategy,
     {
       provide:HashingProvider,
       useClass:BcryptProvider

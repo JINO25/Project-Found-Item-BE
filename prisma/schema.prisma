@@ -109,6 +109,7 @@ model user {
   name         String?        @db.VarChar(45)
   password     String         @db.VarChar(255)
   phone        String?        @db.VarChar(45)
+  avatar       String         @default("https://res.cloudinary.com/dtigntgqf/image/upload/v1740582239/users/otjmgojbc2tmgwchbahn.jpg") @db.VarChar(255)
   conversation conversation[]
   message      message[]
   post         post[]

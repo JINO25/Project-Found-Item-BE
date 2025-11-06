@@ -17,6 +17,7 @@ import { UserRole } from './enums/user-role.enum';
 import { plainToInstance } from 'class-transformer';
 import { UserDTORes } from './dto/res/user-res.dto';
 import { UpdateUserDTO } from './dto/req/update-user.dto';
+import { ImageService } from 'src/image/image.service';
 
 type UserWithRole = user & { role: role };
 
@@ -27,38 +28,43 @@ export class UserService {
 
     @Inject(forwardRef(() => HashingProvider))
     private readonly hashingProvider: HashingProvider,
+    private readonly imageService: ImageService,
   ) {}
 
-  async findAllUsers(): Promise<user[]> {
+  async findAllUsers() {
     // const users = await this.prisma.user.findMany();
     // return users;
-    return await this.prisma.user.findMany();    
+    return await this.prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        avatar: true,
+        role: true,
+        create_At: true,
+      },
+    });
   }
 
-  async findOneByEmail(email: string): Promise<UserWithRole> {
-    const user = await this.prisma.user.findFirst({
-      where: { email: email },
+  async findOneByEmail(email: string): Promise<UserWithRole | null> {
+    return await this.prisma.user.findFirst({
+      where: { email },
       include: { role: true },
     });
-
-    if (!user) {
-      throw new NotFoundException(`User not found with email: ${email}`);
-    }
-
-    return user;
   }
 
-  async findOne(id:number){
+  async findOne(id: number) {
     const user = await this.prisma.user.findUnique({
-        where:{
-            id:id
-        },
-        include:{
-          role:true
-        }
+      where: {
+        id: id,
+      },
+      include: {
+        role: true,
+      },
     });
     if (!user) throw new NotFoundException(`User with id ${id} not found`);
-    return user
+    return user;
   }
 
   async create(createUserDto: CreateUserDto) {
@@ -139,7 +145,11 @@ export class UserService {
     });
   }
 
-  async update(id: number, updateUserDto: UpdateUserDTO) {
+  async update(
+    id: number,
+    updateUserDto: UpdateUserDTO,
+    file: Express.Multer.File,
+  ) {
     const existingUser = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -164,12 +174,18 @@ export class UserService {
       );
     }
 
+    let url;
+    if (file) {
+      url = await this.imageService.uploadAvatar(file);
+    }
+
     const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         email: updateUserDto.email ?? existingUser.email,
         name: updateUserDto.name ?? existingUser.name,
         phone: updateUserDto.phone ?? existingUser.phone,
+        avatar: url ?? existingUser.avatar,
         password: hashedPassword,
       },
       include: { role: true },
@@ -180,19 +196,19 @@ export class UserService {
     });
   }
 
-  async deleteUser(id:number){
+  async deleteUser(id: number) {
     const user = await this.prisma.user.findUnique({
-        where:{
-            id:id
-        }
+      where: {
+        id: id,
+      },
     });
 
-    if(!user) throw new NotFoundException(`User not found with id: ${id}`);
+    if (!user) throw new NotFoundException(`User not found with id: ${id}`);
 
     await this.prisma.user.delete({
-        where:{
-            id:user.id
-        }
-    });   
+      where: {
+        id: user.id,
+      },
+    });
   }
 }
