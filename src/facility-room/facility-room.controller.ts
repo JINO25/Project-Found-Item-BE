@@ -15,6 +15,8 @@ import { CreateFacilityDto } from './dto/req/create-facility.dto';
 import { UpdateFacilityDto } from './dto/req/update-facility.dto';
 import { CreateRoomDto } from './dto/req/create-room.dto';
 import { UpdateRoomDto } from './dto/req/update-room.dto';
+import { Auth } from 'src/common/decorators/auth.decorator';
+import { Roles } from 'src/auth/enums/role.enum';
 
 
 @Controller('facility-room')
@@ -23,6 +25,7 @@ export class FacilityRoomController {
 
 
   @Post('facility')
+  @Auth([Roles.Admin])
   @HttpCode(HttpStatus.CREATED)
   async createFacility(@Body() dto: CreateFacilityDto) {
     const data = await this.service.createFacility(dto);
@@ -30,6 +33,7 @@ export class FacilityRoomController {
   }
 
   @Get('facility')
+  @Auth([Roles.None])
   async getAllFacilities() {
     const data = await this.service.findAllFacilities();
     return { message: 'Facilities retrieved successfully', data };
@@ -42,12 +46,14 @@ export class FacilityRoomController {
   }
 
   @Patch('facility/:id')
+  @Auth([Roles.Admin])
   async updateFacility(@Param('id') id: string, @Body() dto: UpdateFacilityDto) {
     const data = await this.service.updateFacility(Number(id), dto);
     return { message: 'Facility updated successfully', data };
   }
 
   @Delete('facility/:id')
+  @Auth([Roles.Admin])
   @HttpCode(HttpStatus.NO_CONTENT) // 204, không cần trả body
   async deleteFacility(@Param('id') id: string) {
     await this.service.deleteFacility(Number(id));
@@ -55,6 +61,7 @@ export class FacilityRoomController {
 
 
   @Post('room')
+  @Auth([Roles.Admin])
   @HttpCode(HttpStatus.CREATED)
   async createRoom(@Body() dto: CreateRoomDto) {
     const data = await this.service.createRoom(dto);
@@ -62,6 +69,7 @@ export class FacilityRoomController {
   }
 
   @Get('room')
+  @Auth([Roles.None])
   async getAllRooms() {
     const data = await this.service.findAllRooms();
     return { message: 'Rooms retrieved successfully', data };
@@ -74,11 +82,13 @@ export class FacilityRoomController {
   }
 
   @Patch('room/:id')
+  @Auth([Roles.Admin])
   async updateRoom(@Param('id') id: string, @Body() dto: UpdateRoomDto) {
     const data = await this.service.updateRoom(Number(id), dto);
     return { message: 'Room updated successfully', data };
   }
 
+  @Auth([Roles.Admin])
   @Delete('room/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async deleteRoom(@Param('id') id: string) {

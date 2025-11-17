@@ -7,23 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model conversation {
-  id        Int       @id @default(autoincrement())
-  create_At DateTime? @db.Date
-  user_Id1  Int?
-  user_Id2  Int?
-  user_id   Int
-  user      user      @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Conversation_User1")
-  message   message[]
-
-  @@index([user_id], map: "fk_Conversation_User1_idx")
-}
-
 model facility {
   id   Int     @id @default(autoincrement())
-  name String? @db.VarChar(45)
+  college String? @db.VarChar(45)
   room room[]
   post post[]
+  user user[]
 }
 
 model image {
@@ -50,19 +39,6 @@ model item {
 
   @@index([post_id], map: "fk_Item_Post1_idx")
   @@index([type_id], map: "fk_Item_Type1_idx")
-}
-
-model message {
-  id              Int          @id @default(autoincrement())
-  content         String?      @db.VarChar(255)
-  conversation_id Int
-  create_At       DateTime?    @db.Date
-  sender_id       Int
-  conversation    conversation @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_Conversation1")
-  user            user         @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_Message_User1")
-
-  @@index([conversation_id], map: "fk_Message_Conversation1_idx")
-  @@index([sender_id], map: "fk_Message_User1_idx")
 }
 
 model post {
@@ -104,14 +80,15 @@ model type {
 model user {
   id           Int            @id @default(autoincrement())
   roleId       Int
+  collegeId    Int?
   create_At    DateTime?      @db.Date
   email        String         @unique @db.VarChar(45)
   name         String?        @db.VarChar(45)
   password     String         @db.VarChar(255)
   phone        String?        @db.VarChar(45)
-  avatar       String         @default("https://res.cloudinary.com/dtigntgqf/image/upload/v1740582239/users/otjmgojbc2tmgwchbahn.jpg") @db.VarChar(255)
-  conversation conversation[]
-  message      message[]
+  avatar       String         @default("https://res.cloudinary.com/dtigntgqf/image/upload/v1740582239/users/otjmgojbc2tmgwchbahn.jpg") @db.VarChar(255)  
+  course       String?
+  facility     facility?       @relation(fields: [collegeId], references: [id])
   post         post[]
   role         role           @relation(fields: [roleId], references: [id])
 

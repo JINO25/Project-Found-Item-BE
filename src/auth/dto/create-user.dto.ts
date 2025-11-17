@@ -1,7 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { IsEmail, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 import { Match } from 'src/common/decorators/match.decorator';
-
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -16,7 +22,15 @@ export class CreateUserDto {
   email: string;
 
   @IsOptional()
-  avatar:string;
+  avatar: string;
+
+  @IsOptional()
+  @IsString()
+  course?: string;
+
+  @IsOptional()
+  @IsInt()
+  facilityId?: number;
 
   @IsNotEmpty()
   @MinLength(6)
@@ -24,7 +38,8 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @MinLength(6)
-  @Match('password', { message: 'Password confirmation does not match password' })
+  @Match('password', {
+    message: 'Password confirmation does not match password',
+  })
   passwordConfirm: string;
-
 }

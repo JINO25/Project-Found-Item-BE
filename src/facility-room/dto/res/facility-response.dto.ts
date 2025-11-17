@@ -8,7 +8,7 @@ export class FacilityResponseDto {
   id: number;
 
   @Expose()
-  name: string;
+  college: string;
 
   @Expose()
   @Type(() => RoomResponseDto)

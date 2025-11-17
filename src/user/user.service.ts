@@ -1,4 +1,7 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -9,7 +12,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { role, user } from '@prisma/client';
+import { Prisma, role, user } from '@prisma/client';
 import { HashingProvider } from 'src/auth/providers/hashing.provider';
 import { CreateUserDto } from './dto/req/create-user.dto';
 import { EmailAlreadyExistsException } from 'src/common/exceptions/EmailAlreadyExistsException ';
@@ -43,6 +46,7 @@ export class UserService {
         avatar: true,
         role: true,
         create_At: true,
+        facility: true,
       },
     });
   }
@@ -50,8 +54,23 @@ export class UserService {
   async findOneByEmail(email: string): Promise<UserWithRole | null> {
     return await this.prisma.user.findFirst({
       where: { email },
-      include: { role: true },
+      include: { role: true, facility: true },
     });
+  }
+
+  async getMe(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        role: true,
+        facility: true,
+      },
+    });
+    if (!user) throw new NotFoundException(`User with id ${id} not found`);
+    const { password, ...result } = user;
+    return result;
   }
 
   async findOne(id: number) {
@@ -61,6 +80,7 @@ export class UserService {
       },
       include: {
         role: true,
+        facility: true,
       },
     });
     if (!user) throw new NotFoundException(`User with id ${id} not found`);
@@ -89,16 +109,34 @@ export class UserService {
       createUserDto.password,
     );
 
-    const savedUser = await this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        name: createUserDto.name,
-        password: hashedPassword,
-        phone: createUserDto.phone,
-        create_At: new Date(),
-        role: { connect: { id: defaultRole.id } },
+    const userData: Prisma.userCreateInput = {
+      email: createUserDto.email,
+      name: createUserDto.name,
+      password: hashedPassword,
+      phone: createUserDto.phone,
+      create_At: new Date(),
+      role: {
+        connect: {
+          id: defaultRole.id,
+        },
       },
-      include: { role: true },
+    };
+
+    if (createUserDto.course) {
+      userData.course = createUserDto.course;
+    }
+
+    if (createUserDto.facilityId) {
+      userData.facility = {
+        connect: {
+          id: createUserDto.facilityId,
+        },
+      };
+    }
+
+    const savedUser = await this.prisma.user.create({
+      data: userData,
+      include: { role: true, facility: true },
     });
 
     return plainToInstance(UserDTORes, savedUser, {
@@ -186,6 +224,7 @@ export class UserService {
         name: updateUserDto.name ?? existingUser.name,
         phone: updateUserDto.phone ?? existingUser.phone,
         avatar: url ?? existingUser.avatar,
+        course: updateUserDto.course ?? existingUser.course,
         password: hashedPassword,
       },
       include: { role: true },

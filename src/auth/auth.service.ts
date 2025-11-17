@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -35,6 +36,10 @@ export class AuthService {
     private readonly mailService: MailService,
     private readonly hashingProvider: HashingProvider,
   ) {}
+
+  public async getUserInfor(userId:number){
+    return await this.userService.getMe(userId);
+  }
 
   public async signUp(createUserDto: CreateUserDto) {
     return await this.userService.create(createUserDto);

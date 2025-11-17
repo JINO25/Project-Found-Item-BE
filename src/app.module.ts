@@ -14,6 +14,7 @@ import { ImageModule } from './image/image.module';
 import { FacilityRoomModule } from './facility-room/facility-room.module';
 import { PostModule } from './post/post.module';
 import { MailModule } from './mail/mail.module';
+import { ItemTypeModule } from './item-type/item-type.module';
 import googleConfig from './config/google.config';
 
 
@@ -36,7 +37,8 @@ import googleConfig from './config/google.config';
     ImageModule,
     FacilityRoomModule,
     PostModule,
-    MailModule
+    MailModule,
+    ItemTypeModule
   ],
   controllers: [AppController],
   providers: [AppService, PrismaService,    

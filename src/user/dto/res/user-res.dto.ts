@@ -8,11 +8,15 @@ export class UserDTORes {
   @Expose()
   phone: string;
   @Expose()
-  email: string;
+  email: string; 
+  @Expose()
+  course: string;
   @Expose()
   avatar:string;
   @Expose()
   date: Date;
   @Expose()
   role: string;
+  @Expose()
+  college: string;
 }

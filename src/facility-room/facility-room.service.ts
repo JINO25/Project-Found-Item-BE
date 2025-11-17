@@ -1,4 +1,7 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -16,7 +19,7 @@ export class FacilityRoomService {
 
   async createFacility(dto: CreateFacilityDto): Promise<FacilityResponseDto> {
     const facility = await this.prisma.facility.create({
-      data: { name: dto.name },
+      data: { college: dto.name },
       include: { room: true },
     });
 
@@ -77,7 +80,7 @@ export class FacilityRoomService {
 
     const updated = await this.prisma.facility.update({
       where: { id },
-      data: { name: dto.name ?? facility.name },
+      data: { college: dto.name ?? facility.college },
       include: { room: true },
     });
 
