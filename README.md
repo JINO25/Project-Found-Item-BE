@@ -71,8 +71,7 @@ User and application data are managed using MySQL, powered by Prisma ORM for eff
 
 ## Frontend
 
-The project's FE is stored in a separate repository
-You can access at: [FE source](https://github.com/tdagn2202/FoundIt)
+The project's FE is stored in a separate repository. You can access at: [FE source](https://github.com/tdagn2202/FoundIt)
 
 ## Project setup
 
