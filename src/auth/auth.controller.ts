@@ -95,7 +95,10 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    return 'login successful';
+    return {
+      token:accessToken,
+      msg:'Login successful'
+    };
   }
 
   @Auth([Roles.User])

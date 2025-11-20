@@ -54,7 +54,7 @@ export class FacilityRoomController {
 
   @Delete('facility/:id')
   @Auth([Roles.Admin])
-  @HttpCode(HttpStatus.NO_CONTENT) // 204, không cần trả body
+  @HttpCode(HttpStatus.NO_CONTENT) 
   async deleteFacility(@Param('id') id: string) {
     await this.service.deleteFacility(Number(id));
   }

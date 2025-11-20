@@ -22,14 +22,96 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
+This project is a Backend service built with NestJS that provides an intelligent item similarity search feature. The system integrates Qdrant vector database to perform image similarity matching, allowing users to search for items based on visual resemblance.
+All uploaded images are stored securely on Cloudinary, ensuring optimized delivery and efficient media management.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+The project also includes a complete authentication system using Google OAuth, along with a mail service to support password recovery via email.
+User and application data are managed using MySQL, powered by Prisma ORM for efficient database interaction and schema management.
+
+### 🔧 Key Features
+- 🚀 **NestJS Backend** – Modular, scalable server-side architecture  
+- 🔍 **Image Similarity Search** – Qdrant vector search integration  
+- ☁️ **Cloudinary Storage** – Image upload, optimization, and CDN delivery  
+- 🔐 **Google OAuth Authentication** – Secure login using Google accounts  
+- 📧 **Mail Service** – Forgot-password and notification emails  
+- 🗄️ **MySQL + Prisma** – Type-safe relational database management  
+
+## 🛠️ Tech Stack
+
+### **Backend**
+- NestJS  
+- TypeScript  
+
+### **Database**
+- MySQL  
+- Prisma ORM  
+
+### **Vector Search / AI**
+- Qdrant  
+
+### **Cloud Storage**
+- Cloudinary  
+
+### **Authentication**
+- Google OAuth 2.0  
+- JWT  
+- bcrypt  
+
+### **Email**
+- Nodemailer or mail service  
+
+### **Development Tools**
+- Multer / File Interceptors  
+- ESLint + Prettier  
+- Docker (for Qdrant)
+
+## 📂 Project Structure
+project/
+│
+├── prisma/                 # Prisma migrations & schema
+│   ├── migrations/
+│   └── schema.prisma
+│
+├── src/
+│   ├── auth/               # Authentication module (Google OAuth, JWT, etc.)
+│   ├── cloudinary/         # Cloudinary service & upload handlers
+│   ├── common/             # Shared utilities, guards, decorators
+│   ├── config/             # Environment & configuration management
+│   ├── facility-room/      # Facility room module (your custom domain logic)
+│   ├── image/              # Image upload + similarity search integration
+│   ├── item-type/          # Item type management module
+│   ├── mail/               # Email service (forgot password, notifications)
+│   ├── post/               # Post module
+│   ├── prisma/             # Prisma service for DB connection
+│   ├── user/               # User module (profile, CRUD)
+│   │
+│   ├── app.controller.ts   # Main application controller
+│   ├── app.service.ts      # Root service
+│   ├── app.module.ts       # Root module
+│   └── main.ts             # Application entry point
+│
+├── .env                    # Environment variables (local)
+├── example.env             # Example env template
+├── .gitignore
+├── .prettierrc
+├── eslint.config.mjs
+├── package.json
+├── nest-cli.json
+├── tsconfig.json
+└── tsconfig.build.json
+
+## Frontend
+
+The project's FE is stored in a separate repository
+You can access at: `https://github.com/tdagn2202/FoundIt`
 
 ## Project setup
 
 ```bash
 $ npm install
 ```
+## 🔑 Environment Variables
+Create a `.env` file based on `example.env`:
 
 ## Compile and run the project
 
@@ -44,6 +126,22 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+### Prisma Setup
+
+1. **Configure the Database**  
+   Add the `DATABASE_URL` in your `.env` file to connect to your database (MySQL in this example):  
+   ```env
+   DATABASE_URL="mysql://user:password@localhost:3306/mydb"```
+
+2. **Create Migration and Update Database**
+Run the following command to generate a migration and apply it to your database: `npx prisma migrate dev --name init`
+
+3. **Generate Prisma Client**
+Generate the Prisma Client to use in your code: `npx prisma generate`
+
+4. **Access Database with Prisma Studio**
+You can view and manage your database data visually using Prisma Studio: `npx prisma studio`
+
 ## Docker Qdrant to storage images
 ```bash
 # Pull docker
@@ -55,7 +153,8 @@ docker volume create qdrant_storage
 # Run docker
 docker run -d -p 6333:6333 -v qdrant_storage:/qdrant/storage qdrant/qdrant
 ```
-You can check by access to localhost:6333/dashboard
+You can check or see your stored image on qdrant by access to `localhost:6333/dashboard`
+
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
