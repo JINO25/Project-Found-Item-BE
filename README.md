@@ -66,39 +66,8 @@ User and application data are managed using MySQL, powered by Prisma ORM for eff
 - Docker (for Qdrant)
 
 ## 📂 Project Structure
-project/
-│
-├── prisma/                 # Prisma migrations & schema
-│   ├── migrations/
-│   └── schema.prisma
-│
-├── src/
-│   ├── auth/               # Authentication module (Google OAuth, JWT, etc.)
-│   ├── cloudinary/         # Cloudinary service & upload handlers
-│   ├── common/             # Shared utilities, guards, decorators
-│   ├── config/             # Environment & configuration management
-│   ├── facility-room/      # Facility room module (your custom domain logic)
-│   ├── image/              # Image upload + similarity search integration
-│   ├── item-type/          # Item type management module
-│   ├── mail/               # Email service (forgot password, notifications)
-│   ├── post/               # Post module
-│   ├── prisma/             # Prisma service for DB connection
-│   ├── user/               # User module (profile, CRUD)
-│   │
-│   ├── app.controller.ts   # Main application controller
-│   ├── app.service.ts      # Root service
-│   ├── app.module.ts       # Root module
-│   └── main.ts             # Application entry point
-│
-├── .env                    # Environment variables (local)
-├── example.env             # Example env template
-├── .gitignore
-├── .prettierrc
-├── eslint.config.mjs
-├── package.json
-├── nest-cli.json
-├── tsconfig.json
-└── tsconfig.build.json
+
+![alt text](image.png)
 
 ## Frontend
 
