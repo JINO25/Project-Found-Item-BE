@@ -29,6 +29,8 @@ export class UserResDTO {
   @Expose()
   name: string;
   @Expose()
+  email: string;
+  @Expose()
   avatar: string;
   @Expose()
   phone: string;
