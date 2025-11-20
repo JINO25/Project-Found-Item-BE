@@ -75,26 +75,12 @@ The project's FE is stored in a separate repository. You can access at: [FE sour
 
 ## Project setup
 
+### Install dependencies
 ```bash
 $ npm install
 ```
-## 🔑 Environment Variables
-Create a `.env` file based on `example.env`:
 
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-### Prisma Setup
+### Prisma setup
 
 1. **Configure the Database**  
    Add the `DATABASE_URL` in your `.env` file to connect to your database (MySQL in this example):  
@@ -110,7 +96,7 @@ Generate the Prisma Client to use in your code: `npx prisma generate`
 4. **Access Database with Prisma Studio**
 You can view and manage your database data visually using Prisma Studio: `npx prisma studio`
 
-## Docker Qdrant to storage images
+### Docker Qdrant to storage images
 ```bash
 # Pull docker
 docker pull qdrant/qdrant 
@@ -121,8 +107,29 @@ docker volume create qdrant_storage
 # Run docker
 docker run -d -p 6333:6333 -v qdrant_storage:/qdrant/storage qdrant/qdrant
 ```
-You can check or see your stored image on qdrant by access to `localhost:6333/dashboard`
+***You can check or see your stored image on qdrant by access to `localhost:6333/dashboard`***
 
+### 🔑 Environment Variables
+Create a `.env` file based on `example.env`:
+
+### Compile and run the project
+
+```bash
+# development
+$ npm run start
+
+# watch mode
+$ npm run start:dev
+
+# production mode
+$ npm run start:prod
+```
+<span style="color: red;">When starting project, remember to run docker qdrant</span>
+
+```
+# Run docker 
+docker run -d -p 6333:6333 -v qdrant_storage:/qdrant/storage qdrant/qdrant
+```
 ## Deployment
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
