@@ -9,6 +9,37 @@ export class ImageResDto {
   @Expose()
   url: string;
 }
+export class RoomResDTO {
+  @Expose()
+  id: number;
+  @Expose()
+  name: string;
+}
+
+export class FacilityResDTO {
+  @Expose()
+  id: number;
+  @Expose()
+  college: string;
+}
+
+export class UserResDTO {
+  @Expose()
+  id: number;
+  @Expose()
+  name: string;
+  @Expose()
+  avatar: string;
+  @Expose()
+  phone: string;
+}
+
+export class TypeResDTO {
+  @Expose()
+  id: number;
+  @Expose()
+  name: string;
+}
 
 export class ItemResDto {
   @Expose()
@@ -24,7 +55,8 @@ export class ItemResDto {
   status: ItemStatus;
 
   @Expose()
-  type_id: number;
+  @Type(() => TypeResDTO)
+  type: TypeResDTO;
 
   @Expose()
   @Type(() => ImageResDto)
@@ -45,7 +77,16 @@ export class PostResDto {
   create_At: Date;
 
   @Expose()
-  user_id: number;
+  @Type(() => FacilityResDTO)
+  facility: FacilityResDTO;
+
+  @Expose()
+  @Type(() => RoomResDTO)
+  room: RoomResDTO;
+
+  @Expose()
+  @Type(() => UserResDTO)
+  user: UserResDTO;
 
   @Expose()
   @Type(() => ItemResDto)

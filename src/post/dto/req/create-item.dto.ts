@@ -5,11 +5,12 @@ import { ItemStatus } from 'src/post/enums/item-status.enum';
 
 export class CreateItemDto {
   @IsString()
-  name: string;
+  @IsOptional()
+  name?: string;
 
   @IsOptional()
   @IsString()
-  des: string;
+  des?: string;
 
   @IsInt()
   @Type(()=>Number)

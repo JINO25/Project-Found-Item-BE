@@ -1,5 +1,13 @@
 /* eslint-disable prettier/prettier */
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { ItemTypeService } from './item-type.service';
 import { CreateItemTypeDto } from './dto/create-item-type.dto';
 import { UpdateItemTypeDto } from './dto/update-item-type.dto';
@@ -11,7 +19,7 @@ export class ItemTypeController {
   constructor(private readonly itemTypeService: ItemTypeService) {}
 
   @Post()
-    @Auth([Roles.Admin])
+  @Auth([Roles.Admin])
   create(@Body() dto: CreateItemTypeDto) {
     return this.itemTypeService.create(dto);
   }

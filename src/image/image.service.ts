@@ -24,7 +24,8 @@ export class ImageService {
     if (!this.imageEmbedder) {
       this.imageEmbedder = await pipeline(
         'image-feature-extraction',
-        'Xenova/clip-vit-base-patch16',
+        // 'Xenova/clip-vit-base-patch16',
+        'Xenova/clip-vit-large-patch14'
       );
     }
   }
@@ -37,7 +38,8 @@ export class ImageService {
     if (!exists) {
       await this.qdrant.createCollection('images', {
         vectors: {
-          size: 512,
+          // size: 512,
+          size: 768,
           distance: 'Cosine',
         },
       });
@@ -49,16 +51,17 @@ export class ImageService {
     await this.init();
 
     const result = await this.imageEmbedder(url, {
-      pooling: 'mean',
+      // pooling: 'mean',
+      pooling: 'cls',
       normalize: true,
     });
     return Array.from(result.data);
   }
 
-  async uploadAvatar(file: Express.Multer.File) {  
+  async uploadAvatar(file: Express.Multer.File) {
     const data = await this.cloudinaryService.uploadFile(file);
     return data.url;
-  }  
+  }
 
   async uploadImages(itemId: number, files: Express.Multer.File[]) {
     const item = await this.prisma.item.findUnique({ where: { id: itemId } });
@@ -101,7 +104,7 @@ export class ImageService {
     });
 
     return createdImages;
-  }  
+  }
 
   async updateQdrant(itemId: number): Promise<void> {
     await this.ensureCollectionExists();
@@ -132,15 +135,17 @@ export class ImageService {
             match: { value: itemId },
           },
         ],
-      }
+      },
     });
   }
 
-  async deleteImageOnCloudinary(publicId:string){
+  async deleteImageOnCloudinary(publicId: string) {
     await this.cloudinaryService.deleteFile(publicId);
   }
 
-  async searchAllImages(itemId: number, topK = 5) {
+  async searchAllImages(itemId: number, userId:number, topK = 10) {
+    console.log(userId);
+    
     const images = await this.prisma.image.findMany({
       where: { item_id: itemId },
       include: {
@@ -155,6 +160,7 @@ export class ImageService {
       imageId: number;
       similar: {
         id: number | string;
+        userId: number;
         postId: number;
         score: number;
         url?: string | null;
@@ -180,7 +186,7 @@ export class ImageService {
           must_not: [{ key: 'itemId', match: { value: itemId } }],
         },
       });
-      console.log(result);
+      // console.log(result);
 
       //Get id from list result
       listId = result.filter((r) => r.score > 0.5).map((r) => Number(r.id));
@@ -192,21 +198,71 @@ export class ImageService {
           },
         },
         include: {
-          item: true,
+          item: {                        
+            include: {
+              type:true,
+              post: {
+                include: {
+                  facility: {
+                    include: {
+                      room: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 
+      // const filterImagesSimilarity = result
+      //   .filter((r) => listId.includes(Number(r.id)))
+      //   .map((r) => {
+      //     const query = listImages.find((img) => Number(r.id) === img.id);
+      //     return {
+      //       id: r.id,
+      //       // postId: query?.item.post_id,
+      //       post:{
+      //         id:query?.item.post_id,
+      //         title:query?.item.post.title,
+      //         des:query?.item.des,
+      //         facility:query?.item.post.facility?.college,
+      //         room:query?.item.post.facility?.room
+      //       },
+      //       score: r.score,
+      //       url: query?.url,
+      //     };
+      //   });
+
+      const imageMap = new Map(listImages.map((img) => [img.id, img]));
+
       const filterImagesSimilarity = result
-        .filter((r) => listId.includes(Number(r.id)))
+        .filter((r) => r.score > 0.7)
         .map((r) => {
-          const query = listImages.find((img) => Number(r.id) === img.id);
+          const img = imageMap.get(Number(r.id)); // O(1)
+
           return {
             id: r.id,
-            postId: query?.item.post_id,
             score: r.score,
-            url: query?.url,
+            url: img?.url,
+            post: img
+              ? {
+                  id: img.item.post_id,
+                  userId:img.item.post.user_id,
+                  title: img.item.post.title,
+                  des: img.item.post.content,
+                  type:img.item.type.name,
+                  createdAt:img.item.post.create_At,
+                  facility: img.item.post.facility?.college,
+                  room: img.item.post.facility?.room.find(r=>(
+                    img.item.post.room_id === r.id
+                  )),
+                }
+              : null,
           };
-        });
+        })
+        .filter((r) => r.post !== null) // loại cái không match
+        .filter((r) => r.post.userId !== userId); // loại cái không match
 
       allResults.push({
         imageId: image.id,

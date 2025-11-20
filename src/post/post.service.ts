@@ -89,8 +89,8 @@ export class PostService {
       //item
       const item = await tr.item.create({
         data: {
-          des: createPostDto.item.des,
-          name: createPostDto.item.name,
+          des: createPostDto.item.des ?? "",
+          name: createPostDto.item.name ?? "",
           status: createPostDto.item.status,
           post_id: post.id,
           type_id: type.id,
@@ -109,7 +109,7 @@ export class PostService {
       images = await this.imageService.uploadImages(result.item.id, files);
     }
 
-    const dto: PostResDto = {
+    const dto = {
       id: result.post.id,
       title: result.post.title,
       content: result.post.content,
@@ -155,8 +155,10 @@ export class PostService {
 
     const updatedItem = await this.prisma.item.update({
       where: { id: item.id },
-      data: { status: ItemStatus.Found },
+      data: { status: ItemStatus.Done },
     });
+
+    await this.imageService.updateQdrant(item.id);
 
     return updatedItem;
   }
@@ -215,14 +217,17 @@ export class PostService {
       where: {
         item: {
           some: {
-            status: ItemStatus.Lost,
             type_id: type ? type : {},
           },
         },
       },
       include: {
+        user:true,
+        facility:true,
+        room:true,
         item: {
           include: {
+            type:true,
             images: true,
           },
         },
@@ -240,8 +245,12 @@ export class PostService {
         id: postId,
       },
       include: {
+        user:true,
+        facility:true,
+        room:true,
         item: {
           include: {
+            type:true,
             images: true,
           },
         },
@@ -250,6 +259,33 @@ export class PostService {
 
     if (!post) {
       throw new NotFoundException(`Not found post with id: ${postId}!`);
+    }
+
+    return plainToInstance(PostResDto, post, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async getPostsOfUser(userId: number) {
+    const post = await this.prisma.post.findMany({
+      where: {
+        user_id:userId,
+      },
+      include: {
+        user:true,
+        facility:true,
+        room:true,
+        item: {
+          include: {
+            type:true,
+            images: true,
+          },
+        },
+      },
+    });
+
+    if (!post) {
+      throw new NotFoundException(`Not found posts of user with id: ${userId}!`);
     }
 
     return plainToInstance(PostResDto, post, {

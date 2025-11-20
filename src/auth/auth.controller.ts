@@ -36,6 +36,7 @@ export class AuthController {
 
   @Post('sign-in')
   @Auth([Roles.None])
+  @HttpCode(HttpStatus.OK)
   async signIn(@Res({ passthrough: true }) res, @Body() dto: SignInDto) {
     const { accessToken, refreshToken } = await this.authService.login(dto);
 
@@ -53,14 +54,20 @@ export class AuthController {
       sameSite: 'lax',
     });
 
-    return 'login successful';
+    return {
+      token:accessToken,
+      msg:'Login successful'
+    };
   }
 
   @Post('sign-up')
   @Auth([Roles.None])
   async signUp(@Body() dto: CreateUserDto) {
-    await this.authService.signUp(dto);
-    return 'Sign up account successfully';
+    const data = await this.authService.signUp(dto);
+    return {
+      userId:data.id
+    }
+    // return 'Sign up account successfully';
   }
 
   @Get('google')

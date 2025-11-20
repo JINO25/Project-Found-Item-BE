@@ -111,4 +111,5 @@ model role {
 enum item_Status {
   Lost
   Found
+  Done
 }

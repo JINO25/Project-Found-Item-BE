@@ -1,18 +1,19 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/req/create-user.dto';
 import { UpdateUserDTO } from './dto/req/update-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Auth } from 'src/common/decorators/auth.decorator';
 import { Roles } from 'src/auth/enums/role.enum';
+import { GetUserID } from 'src/common/decorators/get-user-id.decorator';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Auth([Roles.Admin])
+  @Auth([Roles.User])
   @Get()
   async getAllUsers() {
     const data = await this.userService.findAllUsers();
@@ -23,6 +24,14 @@ export class UserController {
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
     return { message: 'User created successfully', data: user };
+  }
+  
+  @Auth([Roles.User])
+  @Patch('update')
+  @UseInterceptors(FileInterceptor('file'))
+  async update(@GetUserID() userId: number, @Body() updateUserDto: UpdateUserDTO, @UploadedFile() file: Express.Multer.File) {
+    const updated = await this.userService.update(userId, updateUserDto,file);
+    return { message: 'User updated successfully', data: updated };
   }
 
   @Auth([Roles.Admin])
@@ -39,13 +48,6 @@ export class UserController {
     return { message: 'Get user successfully', data: user };
   }
 
-  @Auth([Roles.User])
-  @Patch(':id')
-  @UseInterceptors(FileInterceptor('file'))
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO, file: Express.Multer.File) {
-    const updated = await this.userService.update(Number(id), updateUserDto,file);
-    return { message: 'User updated successfully', data: updated };
-  }
 
   @Auth([Roles.Admin])
   @Delete(':id')

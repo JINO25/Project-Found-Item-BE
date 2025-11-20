@@ -11,6 +11,9 @@ import {
 } from '@nestjs/common';
 import { ImageService } from './image.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { GetUserID } from 'src/common/decorators/get-user-id.decorator';
+import { Auth } from 'src/common/decorators/auth.decorator';
+import { Roles } from 'src/auth/enums/role.enum';
 
 @Controller('images')
 export class ImageController {
@@ -37,8 +40,9 @@ export class ImageController {
   }
 
   @Get('similar/:id')
-  async findSimilar(@Param('id', ParseIntPipe) id: number) {
-    const data = await this.imageService.searchAllImages(id);
+  @Auth([Roles.User])
+  async findSimilar(@Param('id', ParseIntPipe) id: number, @GetUserID() userId:number) {
+    const data = await this.imageService.searchAllImages(id, userId);
     return { data };
   }
 

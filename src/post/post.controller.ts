@@ -18,7 +18,8 @@ export class PostController {
     @GetUserID() userId:number,
     @UploadedFiles() files:Express.Multer.File[],
     @Body() createPostDto : CreatePostDto
-  ){  
+  ){      
+    console.log(files[0]);
     
     const data = await this.postService.createPost(userId, createPostDto, files);
     return data;
@@ -45,6 +46,14 @@ export class PostController {
     };
   }
 
+  @Get('me')
+  @Auth([Roles.User])
+  getPostsOfUser(
+    @GetUserID() userId: number
+  ){
+    return this.postService.getPostsOfUser(userId);
+  }
+
   @Get(':postId')
   @Auth([Roles.None])
   getPost(
@@ -52,6 +61,7 @@ export class PostController {
   ){
     return this.postService.getPostById(postId);
   }
+
 
   @Delete(':postId')
   @Auth([Roles.User, Roles.Admin])

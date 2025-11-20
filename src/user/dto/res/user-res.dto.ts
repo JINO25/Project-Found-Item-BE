@@ -4,6 +4,8 @@ import { Expose } from 'class-transformer';
 
 export class UserDTORes {
   @Expose()
+  id:number;
+  @Expose()
   name: string;
   @Expose()
   phone: string;
@@ -18,5 +20,5 @@ export class UserDTORes {
   @Expose()
   role: string;
   @Expose()
-  college: string;
+  facility: string;
 }

@@ -16,7 +16,7 @@ export class CreateUserDto {
 
   @IsOptional()
   @IsString()
-  phone: string;
+  phone?: string;
 
   @IsEmail()
   email: string;
@@ -33,11 +33,11 @@ export class CreateUserDto {
   facilityId?: number;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
   password: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(8)
   @Match('password', {
     message: 'Password confirmation does not match password',
   })

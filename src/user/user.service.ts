@@ -113,7 +113,6 @@ export class UserService {
       email: createUserDto.email,
       name: createUserDto.name,
       password: hashedPassword,
-      phone: createUserDto.phone,
       create_At: new Date(),
       role: {
         connect: {
@@ -121,6 +120,10 @@ export class UserService {
         },
       },
     };
+
+    if(createUserDto.phone){
+      userData.phone = createUserDto.phone;
+    }
 
     if (createUserDto.course) {
       userData.course = createUserDto.course;
@@ -188,6 +191,8 @@ export class UserService {
     updateUserDto: UpdateUserDTO,
     file: Express.Multer.File,
   ) {
+    console.log(file);
+    
     const existingUser = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -212,9 +217,17 @@ export class UserService {
       );
     }
 
-    let url;
+    let url, college;
     if (file) {
       url = await this.imageService.uploadAvatar(file);
+    }
+    
+    if(updateUserDto.facilityId){
+       college = await this.prisma.facility.findUnique({
+        where:{
+          id:updateUserDto.facilityId
+        }
+      });
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -225,9 +238,10 @@ export class UserService {
         phone: updateUserDto.phone ?? existingUser.phone,
         avatar: url ?? existingUser.avatar,
         course: updateUserDto.course ?? existingUser.course,
+        collegeId: updateUserDto.facilityId ?? existingUser.collegeId,
         password: hashedPassword,
       },
-      include: { role: true },
+      include: { role: true, facility:true },
     });
 
     return plainToInstance(UserDTORes, updatedUser, {
