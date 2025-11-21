@@ -251,7 +251,10 @@ export class ImageService {
               ? {
                   id: img.item.post_id,
                   user:{
-                    email:img.item.post.user.email
+                    name:img.item.post.user.name,
+                    email:img.item.post.user.email,
+                    avt:img.item.post.user.avatar,
+                    phone:img.item.post.user.phone
                   },
                   title: img.item.post.title,
                   des: img.item.post.content,
