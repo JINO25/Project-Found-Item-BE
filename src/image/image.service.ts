@@ -4,6 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { user } from '@prisma/client';
 import { QdrantClient } from '@qdrant/js-client-rest';
 import { pipeline } from '@xenova/transformers';
 import { CloudinaryService } from 'src/cloudinary/providers/cloudinary.service';
@@ -160,7 +161,7 @@ export class ImageService {
       imageId: number;
       similar: {
         id: number | string;
-        userId: number;
+        user: user;        
         postId: number;
         score: number;
         url?: string | null;
@@ -201,8 +202,9 @@ export class ImageService {
           item: {                        
             include: {
               type:true,
-              post: {
+              post: {                
                 include: {
+                  user:true,
                   facility: {
                     include: {
                       room: true,
@@ -248,7 +250,9 @@ export class ImageService {
             post: img
               ? {
                   id: img.item.post_id,
-                  userId:img.item.post.user_id,
+                  user:{
+                    email:img.item.post.user.email
+                  },
                   title: img.item.post.title,
                   des: img.item.post.content,
                   type:img.item.type.name,
